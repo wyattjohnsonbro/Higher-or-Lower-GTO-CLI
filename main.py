@@ -35,9 +35,9 @@ def suggest(card: str) -> None:
         return
 
     value = VALUES[card]
-    # Compute counts of strictly higher/lower cards
-    higher = sum(counts[r] for r in RANKS if VALUES[r] > value)
-    lower = sum(counts[r] for r in RANKS if VALUES[r] < value)
+    # Compute counts of higher/lower cards (ties win)
+    higher = sum(counts[r] for r in RANKS if VALUES[r] >= value)
+    lower = sum(counts[r] for r in RANKS if VALUES[r] <= value)
     total = max(total_remaining(), 0.0)
 
     if total <= 0:
@@ -49,7 +49,7 @@ def suggest(card: str) -> None:
 
     print(f"Probability higher: {p_higher:.4f}")
     print(f"Probability lower : {p_lower:.4f}")
-    print()  # single blank line
+    print()
 
     # Suggest move based purely on probability; ties suggest random choice.
     if p_higher > p_lower:
