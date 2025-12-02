@@ -1,4 +1,6 @@
 import statistics
+from scipy.stats import norm
+import math
 
 # Standard card ranks from 2 to Ace. Useful for ordered comparisons.
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -39,7 +41,7 @@ def suggest(card: str) -> None:
     higher = sum(counts[r] for r in RANKS if VALUES[r] > value)
     lower = sum(counts[r] for r in RANKS if VALUES[r] < value)
     # Subtract 1.0 for the shown card itself; ensures probabilities sum to 1 when no other cards are left.
-    total = max(total_remaining() - 1.0, 0.0)
+    total = max(total_remaining(), 0.0)
 
     if total <= 0:
         print("No cards left!")
@@ -245,6 +247,36 @@ def observed_summary():
         "nums": nums,
     }
 
+def test_significance_mean():
+    obs = observed_summary()
+    pred = predicted_summary()
+    if obs is None:
+        print("No observed draws yet.")
+        return
+
+    n = obs["n"]
+    obs_mean = obs["mean"]
+    pred_mean = pred["mean"]
+    pred_std = pred["std_population"]
+
+    if n <= 0:
+        print("No draws to test.")
+        return
+
+    # z-statistic
+    z = (obs_mean - pred_mean) / (pred_std / math.sqrt(n))
+    p_value = 2 * (1 - norm.cdf(abs(z)))  # two-tailed
+
+    print(f"Z-statistic: {z:.4f}")
+    print(f"Two-tailed p-value: {p_value:.6f}")
+
+    alpha = 0.05
+    if p_value < alpha:
+        print("Result is statistically significant (reject H0).")
+    else:
+        print("Result is NOT statistically significant (fail to reject H0).")
+
+
 
 def print_stats_compare():
     """Print predicted vs observed summary statistics side by side.
@@ -293,6 +325,7 @@ print("  - Enter 'table' to see probability table.")
 print("  - Enter 'stats' to compare predicted vs observed summary statistics.")
 print("  - Enter 'reset' to restart.")
 print("  - Enter 'quit' to exit.")
+print("  - Enter 'test' to run a significance test of observed vs predicted mean.")
 print()
 
 while True:
@@ -300,20 +333,25 @@ while True:
 
     if user_input == "QUIT":
         break
+        
     if user_input == "RESET":
         reset()
         continue
+        
     if user_input == "SHOW":
         for r in RANKS:
             print(f"{r}: {counts[r]:.2f}", end="  ")
         print(f"\nTotal: {total_remaining():.2f}")
         continue
+        
     if user_input == "TABLE":
         distribution_table()
         continue
+        
     if user_input == "STATS":
         print_stats_compare()
         continue
+        
     if user_input.startswith("DISCARD"):
         parts = user_input.split()
         if len(parts) == 2 and parts[1].isdigit():
@@ -321,8 +359,13 @@ while True:
         else:
             print("Usage: discard <number>")
         continue
+        
     if user_input in RANKS:
         play_card(user_input)
         continue
+        
+    if user_input == "TEST":
+        test_significance_mean()
+    continue
 
     print("Invalid input. Try a rank 2..A or one of the commands.")
