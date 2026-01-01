@@ -1,9 +1,6 @@
 import statistics
 
-# Standard card ranks from 2 to Ace. Useful for ordered comparisons.
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-
-# Mapping rank to a numeric value. Allows arithmetic comparisons and summary stats.
 VALUES = {r: i for i, r in enumerate(RANKS, start=2)}
 
 # Each rank occurs 4 times per deck, two decks combined → 8 copies per rank.
@@ -13,7 +10,6 @@ INITIAL_COUNT = 8.0
 # Dictionary holding remaining counts per rank. Will mutate during play.
 counts = {r: INITIAL_COUNT for r in RANKS}
 
-# History of played cards for computing observed statistics.
 history = []
 
 
